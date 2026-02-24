@@ -32,7 +32,7 @@ const App = () => {
     <div className="min-h-screen text-white">
       {authUser && <Navbar />}
 
-      <main className="px-4 md:px-8 py-6 pt-28">
+      <main className="px-4 md:px-8 py-6">
         <Routes>
           <Route
             path="/"
