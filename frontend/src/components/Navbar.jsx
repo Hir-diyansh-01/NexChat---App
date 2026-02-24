@@ -19,7 +19,7 @@ const Navbar = () => {
   }, [lightMode]);
 
   return (
-    <header className="fixed top-0 w-full z-50 px-6 pt-6">
+    <header className="fixed top-0 w-full z-50 px-6">
       <div className="glass max-w-7xl mx-auto px-6 py-4 flex items-center justify-between shadow-2xl">
         
         {/* Logo */}
