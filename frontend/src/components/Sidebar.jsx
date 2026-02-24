@@ -20,8 +20,8 @@ const Sidebar = ({ closeSidebar }) => {
     getUsers();
   }, [getUsers]);
 
-  const filteredUsers = users.filter((user) =>
-    user.fullName.toLowerCase().includes(search.toLowerCase())
+  const filteredUsers = (Array.isArray(users) ? users : []).filter((user) =>
+  user.fullName?.toLowerCase().includes(search.toLowerCase())
   );
 
   if (isUsersLoading) return <SidebarSkeleton />;
