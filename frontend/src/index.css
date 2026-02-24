@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background: linear-gradient(
+    135deg,
+    #0f0c29,
+    #302b63,
+    #24243e
+  );
+  min-height: 100vh;
+}
+
+.glass {
+  background: hsl(var(--b2) / 0.6);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid hsl(var(--b3) / 0.2);
+  border-radius: 20px;
+}
+
+.light-mode {
+  background: white !important;
+  color: black !important;
+}
+
+.light-mode .glass {
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
