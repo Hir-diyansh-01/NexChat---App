@@ -10,6 +10,7 @@ const Sidebar = ({ closeSidebar }) => {
     users,
     selectedUser,
     setSelectedUser,
+    unreadMessages, // 🔥 added
     isUsersLoading,
   } = useChatStore();
 
@@ -21,7 +22,7 @@ const Sidebar = ({ closeSidebar }) => {
   }, [getUsers]);
 
   const filteredUsers = (Array.isArray(users) ? users : []).filter((user) =>
-  user.fullName?.toLowerCase().includes(search.toLowerCase())
+    user.fullName?.toLowerCase().includes(search.toLowerCase())
   );
 
   if (isUsersLoading) return <SidebarSkeleton />;
@@ -47,7 +48,7 @@ const Sidebar = ({ closeSidebar }) => {
           )}
         </div>
 
-        {/* ===== Search Bar (Dribbble Style) ===== */}
+        {/* ===== Search ===== */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-white/60" />
           <input
@@ -56,16 +57,10 @@ const Sidebar = ({ closeSidebar }) => {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="
-              w-full
-              pl-9 pr-4 py-2
-              rounded-xl
-              bg-white/20
-              backdrop-blur-md
-              text-white
-              placeholder-white/60
-              text-sm
-              outline-none
-              focus:ring-2 focus:ring-white/40
+              w-full pl-9 pr-4 py-2 rounded-xl
+              bg-white/20 backdrop-blur-md
+              text-white placeholder-white/60 text-sm
+              outline-none focus:ring-2 focus:ring-white/40
             "
           />
         </div>
@@ -77,6 +72,7 @@ const Sidebar = ({ closeSidebar }) => {
         {filteredUsers.map((user) => {
           const isSelected = selectedUser?._id === user._id;
           const isOnline = onlineUsers.includes(user._id);
+          const unreadCount = unreadMessages?.[user._id] || 0;
 
           return (
             <button
@@ -102,21 +98,43 @@ const Sidebar = ({ closeSidebar }) => {
                   className="size-11 object-cover rounded-xl"
                 />
 
+                {/* Online Dot */}
                 {isOnline && (
                   <span className="absolute bottom-0 right-0 size-3 rounded-full bg-[#7C5CFF] ring-2 ring-[#5B3DF5]" />
                 )}
               </div>
 
               {/* User Info */}
-              <div className="text-left min-w-0">
-                <div className="font-medium text-white truncate text-sm">
+              <div className="text-left min-w-0 flex-1">
+                <div
+                  className={`
+                    truncate text-sm
+                    ${
+                      unreadCount > 0
+                        ? "font-bold text-white"
+                        : "font-medium text-white"
+                    }
+                  `}
+                >
                   {user.fullName}
                 </div>
+
                 <div className="text-xs text-white/60">
                   {isOnline ? "Online" : "Offline"}
                 </div>
               </div>
 
+              {/* 🔥 Unread Badge */}
+              {unreadCount > 0 && (
+                <div className="
+                  bg-green-500 text-white text-xs
+                  min-w-[20px] h-5 px-2
+                  flex items-center justify-center
+                  rounded-full font-semibold
+                ">
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </div>
+              )}
             </button>
           );
         })}

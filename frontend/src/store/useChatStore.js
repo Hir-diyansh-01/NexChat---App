@@ -7,10 +7,12 @@ export const useChatStore = create((set, get) => ({
   messages: [],
   users: [],
   selectedUser: null,
+  unreadMessages: {}, // 🔥 { userId: count }
   isUsersLoading: false,
   isMessagesLoading: false,
   isTyping: false,
 
+  // ================= USERS =================
   getUsers: async () => {
     set({ isUsersLoading: true });
     try {
@@ -23,6 +25,7 @@ export const useChatStore = create((set, get) => ({
     }
   },
 
+  // ================= MESSAGES =================
   getMessages: async (userId) => {
     set({ isMessagesLoading: true });
     try {
@@ -47,34 +50,51 @@ export const useChatStore = create((set, get) => ({
 
       set({ messages: [...messages, res.data] });
 
-      // 🔹 Stop typing after sending
+      // Stop typing after sending
       socket?.emit("stopTyping", selectedUser._id);
-
     } catch (error) {
       toast.error(error.response?.data?.message || "Error sending message");
     }
   },
 
-  subscribeToMessages: () => {
-    const { selectedUser } = get();
-    if (!selectedUser) return;
+  // ================= UNREAD LOGIC =================
+  setUnread: (userId) =>
+    set((state) => ({
+      unreadMessages: {
+        ...state.unreadMessages,
+        [userId]: (state.unreadMessages[userId] || 0) + 1,
+      },
+    })),
 
+  clearUnread: (userId) =>
+    set((state) => ({
+      unreadMessages: {
+        ...state.unreadMessages,
+        [userId]: 0,
+      },
+    })),
+
+  // ================= SOCKET SUBSCRIBE =================
+  subscribeToMessages: () => {
     const socket = useAuthStore.getState().socket;
     if (!socket) return;
 
-    // 🔹 New Message Listener
     socket.on("newMessage", (newMessage) => {
+      const { selectedUser, setUnread } = get();
+
       const isMessageFromSelectedUser =
-        newMessage.senderId === selectedUser._id;
+        selectedUser?._id === newMessage.senderId;
 
-      if (!isMessageFromSelectedUser) return;
-
-      set({
-        messages: [...get().messages, newMessage],
-      });
+      if (isMessageFromSelectedUser) {
+        set({
+          messages: [...get().messages, newMessage],
+        });
+      } else {
+        // 🔥 increase unread if chat not open
+        setUnread(newMessage.senderId);
+      }
     });
 
-    // 🔹 Typing Listener
     socket.on("userTyping", () => {
       set({ isTyping: true });
     });
@@ -93,6 +113,14 @@ export const useChatStore = create((set, get) => ({
     socket.off("userStopTyping");
   },
 
+  // ================= SELECT USER =================
   setSelectedUser: (selectedUser) =>
-    set({ selectedUser, isTyping: false }),
+    set((state) => ({
+      selectedUser,
+      isTyping: false,
+      unreadMessages: {
+        ...state.unreadMessages,
+        [selectedUser._id]: 0, // 🔥 clear unread when opening chat
+      },
+    })),
 }));
